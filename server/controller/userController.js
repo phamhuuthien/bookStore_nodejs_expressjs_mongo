@@ -56,7 +56,56 @@ const login = async(req,res) => {
     }  
 }
 
-module.exports ={
-    register,
-    login
-}
+const getUser = async (req, res) => {
+  const { _id } = req.user;
+  const response = await User.findById(_id);
+  return res.status(200).json({
+    success: response ? true : false,
+    user: response,
+  });
+};
+
+const getAllUsers = async (req, res) => {
+  const response = await User.find().select("-refreshToken -password -role");
+  return res.status(200).json({
+    success: response ? true : false,
+    user: response,
+  });
+};
+
+const updateUser = async (req, res) => {
+  const { _id } = req.user;
+  const data = req.body;
+  if (Object.keys(data).length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "missing input",
+    });
+  } else {
+    const response = await User.findByIdAndUpdate(_id, data, {
+      new: true,
+    }).select("-refreshToken -password -role");
+    return res.status(200).json({
+      success: response ? true : false,
+      user: response,
+    });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  const { _id } = req.query;
+  const response = await User.findByIdAndDelete(_id, { new: true });
+  return res.status(200).json({
+    success: response ? true : false,
+    user: `success delete account with emial ${response.email}`,
+  });
+};
+
+module.exports = {
+  register,
+  login,
+  getUser,
+  getAllUsers,
+  deleteUser,
+  updateUser,
+};
